@@ -74,7 +74,7 @@ public class Couchist {
         String revision = CouchDriver.RevisionFetch.$().db("table1").docId(gistHash).to().fire().json();
         if (null != revision) System.exit(0);
         String req = "https://api.github.com/gists/" + gistHash;
-        final TreeMap<  String,   TreeMap<String, String>> att = new TreeMap<>();
+        TreeMap<  String,   TreeMap<String, String>> att = new TreeMap<>();
         try {
             try (InputStream in = new URL(req).openStream(); InputStreamReader inputStreamReader = new InputStreamReader(in)) {
                 Map originalGist = new Gson().fromJson(inputStreamReader, Map.class);
@@ -87,13 +87,13 @@ public class Couchist {
 
                         String raw_url = (String) fmap.get("raw_url");
                         String filename = (String) fmap.get("filename");
-                        final Long size = ((Number) fmap.get("size")).longValue();
+                        Long size = ((Number) fmap.get("size")).longValue();
                         byte[] content = ((String) fmap.get("content")).getBytes(HttpMethod.UTF8);
                         String type = (String) fmap.get("type");
                         if (null!= TESTATTACHMENTS || content.length != size) {//not sure if github guarantees content in map, so just in case this is the fun way to get what's important.
 
                             HttpURLConnection urlConnection = (HttpURLConnection) new URL(raw_url).openConnection();
-                            final int responseCode = urlConnection.getResponseCode();
+                            int responseCode = urlConnection.getResponseCode();
                             if (200 == responseCode) {
 
                                 type = urlConnection.getHeaderField("Content-Type");
@@ -103,7 +103,7 @@ public class Couchist {
                             }
 
                         }
-                        final String b64content = BaseEncoding.base64().encode(content);
+                        String b64content = BaseEncoding.base64().encode(content);
                         //                        http://wiki.apache.org/couchdb/HTTP_Document_API#Inline_Attachments
 
                         /**
@@ -119,7 +119,7 @@ public class Couchist {
                          }
                          }
                          */
-                        final TreeMap<String, String> inline = new TreeMap< >();
+                        TreeMap<String, String> inline = new TreeMap< >();
                         inline.put("content_type", type);
                         inline.put("data", b64content);
                         att.put(filename, inline);
@@ -129,7 +129,7 @@ public class Couchist {
                     doc.put("_id", gistHash);
                     doc.put("orig", originalGist)  ;
 
-                    final CouchTx table1 = CouchDriver.DocPersist.$().db("table1").validjson(new Gson().toJson(doc)).to().fire().tx();
+                    CouchTx table1 = CouchDriver.DocPersist.$().db("table1").validjson(new Gson().toJson(doc)).to().fire().tx();
                     System.err.println("results: "+table1);
                 }
             }
